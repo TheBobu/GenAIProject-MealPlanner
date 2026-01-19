@@ -2,7 +2,7 @@ from crewai.tools import tool
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 import numpy as np
-
+import os
 
 class RecipeSearcher:
     """Singleton class to handle recipe searching with sentence transformers."""
@@ -20,6 +20,7 @@ class RecipeSearcher:
             return
             
         self.csv_path = "./knowledge/13k-recipes.csv"
+        self.cache_path = "./knowledge/recipe_embeddings_cached.npy"
         self.model_name = "sentence-transformers/all-MiniLM-L6-v2"
         self._model = None
         self._df = None
@@ -29,16 +30,16 @@ class RecipeSearcher:
     
     def _initialize(self):
         """Load model, CSV, and create embeddings."""
-        print("🔄 Initializing Recipe Search Tool...")
+        print("Initializing Recipe Search Tool...")
         
         import torch
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self._model = SentenceTransformer(self.model_name, device=device)
-        print(f"✓ Loaded model: {self.model_name} on {device.upper()}")
+        print(f"Loaded model: {self.model_name} on {device.upper()}")
         
         # Load CSV
         self._df = pd.read_csv(self.csv_path)
-        print(f"✓ Loaded {len(self._df)} recipes from CSV")
+        print(f"Loaded {len(self._df)} recipes from CSV")
         
         # Create combined text for search using your CSV columns
         self._df['search_text'] = (
@@ -48,10 +49,17 @@ class RecipeSearcher:
         )
         
         # Create embeddings
-        print("🔄 Creating embeddings (this may take a minute)...")
-        texts = self._df['search_text'].tolist()
-        self._embeddings = self._model.encode(texts, show_progress_bar=True)
-        print("✓ Recipe Search Tool ready!")
+        if os.path.exists(self.cache_path):
+            print(f"Loading cached embeddings from {self.cache_path}...")
+            self._embeddings = np.load(self.cache_path)
+            print(f"Loaded {len(self._embeddings)} cached embeddings!")
+        else:
+            print("Creating embeddings...")
+            texts = self._df['search_text'].tolist()
+            self._embeddings = self._model.encode(texts, show_progress_bar=True)
+            np.save(self.cache_path, self._embeddings)
+            print(f"Emeddings cached at {self.cache_path}.")
+        print("Recipe Search Tool ready!")
     
     def search(self, query: str, top_k: int = 5) -> str:
         """

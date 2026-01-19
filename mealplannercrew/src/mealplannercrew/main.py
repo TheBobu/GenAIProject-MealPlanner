@@ -17,9 +17,17 @@ def run():
     """
     Run the crew.
     """
+    try:
+        with open('./knowledge/user_preference.txt', 'r', encoding='utf-8') as f:
+            user_profile = f.read()
+    except FileNotFoundError:
+        user_profile = "No specific preferences provided."
+
     inputs = {
-        'topic': 'AI LLMs',
-        'current_year': str(datetime.now().year)
+        'topic': 'Meal Planning',
+        'user_request': "Generate 1 meal according to my preferences and calculate everything about it.",
+        'current_year': str(datetime.now().year),
+        'user_profile': user_profile
     }
 
     try:
@@ -33,7 +41,7 @@ def train():
     Train the crew for a given number of iterations.
     """
     inputs = {
-        "topic": "AI LLMs",
+        "topic": "Meal Planning",
         'current_year': str(datetime.now().year)
     }
     try:
@@ -57,7 +65,7 @@ def test():
     Test the crew execution and returns the results.
     """
     inputs = {
-        "topic": "AI LLMs",
+        "topic": "Meal Planning",
         "current_year": str(datetime.now().year)
     }
 

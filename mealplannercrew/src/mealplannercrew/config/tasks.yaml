@@ -1,35 +1,35 @@
 research_recipes_task:
   description: >
     Analyze the user's request: {user_request}. 
-    Search the recipe database ({recipe_file}) to find 3-5 existing meals 
-    that align with the user's dietary preferences and time constraints.
+    Search the recipe database to find a 3 existing meals 
+    that align with the user's dietary preferences and time constraints (user profile: {user_profile}). 
   expected_output: >
-    A list of 3-5 suitable recipes including their titles and full ingredient lists.
+    A list of suitable recipes including their titles and full ingredient lists. Exclude the preparation steps.
   agent: recipe_researcher
 
-invent_meal_task:
-  description: >
-    Review the ingredients and flavor profiles present in {recipe_file}. 
-    Using your culinary expertise, invent 2 completely new, original recipes 
-    that would appeal to someone with these preferences: {user_request}. 
-    Ensure the recipes are creative but use realistic ingredient combinations.
-  expected_output: >
-    Two original recipe creations with a title, a brief "chef's note" on the 
-    flavor profile, and a detailed list of ingredients.
-  agent: creative_chef
+# invent_meal_task:
+#   description: >
+#     Review the ingredients and flavor profiles present in the recipe database. 
+#     Using your culinary expertise, invent 2 completely new, original recipes 
+#     that would appeal to someone with these preferences: {user_profile}. 
+#     Ensure the recipes are creative but use realistic ingredient combinations.
+#   expected_output: >
+#     Two original recipe creations with a title, a brief "chef's note" on the 
+#     flavor profile, and a detailed list of ingredients.
+#   agent: creative_chef
 
 calculate_macros_task:
   description: >
-    Take the list of recipes from both the 'research_recipes_task' and the 
-    'invent_meal_task'. Use the macronutrient database ({macro_file}) to 
-    calculate the total calories, protein, carbohydrates, and fats for each meal.
+    Take the list of recipes from both the 'research_recipes_task'. Use the macronutrient tool fetch_ingredient_macros to 
+    calculate the total calories, protein, carbohydrates, and fats for each meal. If this tool cannot find macronutrients 
+    use the other tool available, the online macro tool
   expected_output: >
     A nutritional breakdown for every recipe provided, formatted clearly 
     per serving.
   agent: nutritionist
   context:
     - research_recipes_task
-    - invent_meal_task
+    #- invent_meal_task
 
 price_ingredients_task:
   description: >
@@ -42,20 +42,19 @@ price_ingredients_task:
   agent: cost_estimator
   context:
     - research_recipes_task
-    - invent_meal_task
+    #- invent_meal_task
 
 summarize_plan_task:
   description: >
     Synthesize all information gathered (recipes, nutrition, and costs). 
-    Review this against the user's personal profile: {user_profile}. 
-    Create a finalized, motivating weekly meal plan that highlights why 
-    these choices are perfect for the user's health goals and budget.
+    Review this against the user's personal profile: {user_profile} and the user request: {user_request}. 
+    Create a finalized summary and retrieve the recipe cooking steps using the recipe tool.
   expected_output: >
     A comprehensive, professionally formatted meal plan summary including 
     a menu, nutritional overview, and shopping budget.
   agent: plan_summarizer
   context:
     - research_recipes_task
-    - invent_meal_task
+    #- invent_meal_task
     - calculate_macros_task
     - price_ingredients_task

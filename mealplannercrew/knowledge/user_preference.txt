@@ -1,4 +1,5 @@
 User name is John Doe.
-User is an AI Engineer.
-User is interested in AI Agents.
-User is based in San Francisco, California.
+User has height 180cm and weight 90kg
+User is not allergic to any food
+User is interested in losing weight
+User prefers vegetarian and pescatarian meals

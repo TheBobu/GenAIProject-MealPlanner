@@ -7,10 +7,8 @@ def fetch_ingredient_macros(ingredient_name: str) -> str:
     Search for a food ingredient on Open Food Facts and return 
     its macronutrients (calories, proteins, carbs, fats) per 100g.
     """
-    # Initialize the API with a descriptive User-Agent (Required by OFF)
-    api = openfoodfacts.API(user_agent="MyMealPlannerApp/1.0")
+    api = openfoodfacts.API(user_agent="MyMealPlannerApp/1.0",timeout=20)
     
-    # Search for the product
     search_results = api.product.text_search(ingredient_name)
     
     if search_results.get('count', 0) > 0:
@@ -18,7 +16,6 @@ def fetch_ingredient_macros(ingredient_name: str) -> str:
         name = product.get('product_name', 'Unknown')
         nutriments = product.get('nutriments', {})
         
-        # Extract specific macro data
         macros = {
             "calories": nutriments.get('energy-kcal_100g', 'N/A'),
             "proteins": nutriments.get('proteins_100g', 'N/A'),
