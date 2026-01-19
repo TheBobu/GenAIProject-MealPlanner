@@ -3,6 +3,7 @@ from crewai.project import CrewBase, agent, crew, task, before_kickoff
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List
 
+from src.mealplannercrew.tools.body_composition_energy import health_calculator
 from src.mealplannercrew.tools.price_tool import price_tool
 from src.mealplannercrew.tools.recipe_tool import search_recipes
 from src.mealplannercrew.tools.macronutrients_tool import fetch_ingredient_macros
@@ -45,7 +46,6 @@ class Mealplannercrew:
     @before_kickoff
     def prepare_inputs(self, inputs):
         print(f"Starting crew with request: {inputs.get('user_request')}")
-        inputs["timestamp"] = "2026-01-19"
 
         return inputs
 
@@ -91,7 +91,7 @@ class Mealplannercrew:
             config=self.agents_config["plan_summarizer"],
             verbose=True,
             llm=self.mistral_llm,
-            tools=[search_recipes]
+            tools=[search_recipes, health_calculator]
         )
 
     @task

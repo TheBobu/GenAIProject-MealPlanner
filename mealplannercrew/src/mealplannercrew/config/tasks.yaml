@@ -48,6 +48,8 @@ summarize_plan_task:
   description: >
     Synthesize all information gathered (recipes, nutrition, and costs). 
     Review this against the user's personal profile: {user_profile} and the user request: {user_request}. 
+    If the user specifies its age, weight and height, calculate the body composition and energy needs 
+    (BMI and maintenance calories as well as calories needed to increase or decrease weight) using the personal_health_calculator tool.
     Create a finalized summary and retrieve the recipe cooking steps using the recipe tool.
   expected_output: >
     A comprehensive, professionally formatted meal plan summary including 

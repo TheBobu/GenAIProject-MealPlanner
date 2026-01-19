@@ -1,0 +1,13 @@
+{
+    "andrei": {
+        "username": "andrei",
+        "dietary_preferences": "I prefer meals that have animal meat protein",
+        "allergies": "none",
+        "age": 25,
+        "height": "187",
+        "weight": "120",
+        "gender": "male",
+        "activity_level": "Light",
+        "nutritional_goals": "I want to lose weight."
+    }
+}

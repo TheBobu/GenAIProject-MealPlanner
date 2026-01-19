@@ -24,9 +24,7 @@ def run():
         user_profile = "No specific preferences provided."
 
     inputs = {
-        'topic': 'Meal Planning',
         'user_request': "Generate 1 meal according to my preferences and calculate everything about it.",
-        'current_year': str(datetime.now().year),
         'user_profile': user_profile
     }
 
