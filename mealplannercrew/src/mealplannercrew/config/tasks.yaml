@@ -1,17 +1,61 @@
-research_task:
+research_recipes_task:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is {current_year}.
+    Analyze the user's request: {user_request}. 
+    Search the recipe database ({recipe_file}) to find 3-5 existing meals 
+    that align with the user's dietary preferences and time constraints.
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
-  agent: researcher
+    A list of 3-5 suitable recipes including their titles and full ingredient lists.
+  agent: recipe_researcher
 
-reporting_task:
+invent_meal_task:
   description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
+    Review the ingredients and flavor profiles present in {recipe_file}. 
+    Using your culinary expertise, invent 2 completely new, original recipes 
+    that would appeal to someone with these preferences: {user_request}. 
+    Ensure the recipes are creative but use realistic ingredient combinations.
   expected_output: >
-    A fully fledged report with the main topics, each with a full section of information.
-    Formatted as markdown without '```'
-  agent: reporting_analyst
+    Two original recipe creations with a title, a brief "chef's note" on the 
+    flavor profile, and a detailed list of ingredients.
+  agent: creative_chef
+
+calculate_macros_task:
+  description: >
+    Take the list of recipes from both the 'research_recipes_task' and the 
+    'invent_meal_task'. Use the macronutrient database ({macro_file}) to 
+    calculate the total calories, protein, carbohydrates, and fats for each meal.
+  expected_output: >
+    A nutritional breakdown for every recipe provided, formatted clearly 
+    per serving.
+  agent: nutritionist
+  context:
+    - research_recipes_task
+    - invent_meal_task
+
+price_ingredients_task:
+  description: >
+    Identify all unique ingredients required for the selected and invented 
+    meals. Search for current market prices in Europe to estimate the 
+    cost of each meal and the total grocery bill for the entire plan.
+  expected_output: >
+    An itemized price list for all ingredients and a total cost estimate 
+    for the proposed meal plan.
+  agent: cost_estimator
+  context:
+    - research_recipes_task
+    - invent_meal_task
+
+summarize_plan_task:
+  description: >
+    Synthesize all information gathered (recipes, nutrition, and costs). 
+    Review this against the user's personal profile: {user_profile}. 
+    Create a finalized, motivating weekly meal plan that highlights why 
+    these choices are perfect for the user's health goals and budget.
+  expected_output: >
+    A comprehensive, professionally formatted meal plan summary including 
+    a menu, nutritional overview, and shopping budget.
+  agent: plan_summarizer
+  context:
+    - research_recipes_task
+    - invent_meal_task
+    - calculate_macros_task
+    - price_ingredients_task

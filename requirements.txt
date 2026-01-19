@@ -8,3 +8,12 @@ litellm<1.80.0
 openai~=1.83.0
 python-dotenv
 pydantic>=2.0.0
+openfoodfacts
+sentence-transformers>=5.2.0
+tokenizers~=0.20.3
+mcp~=1.16.0
+langchain_huggingface
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+--extra-index-url https://download.pytorch.org/whl/cu118
