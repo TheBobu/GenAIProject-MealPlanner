@@ -1,11 +1,51 @@
 research_recipes_task:
   description: >
     Analyze the user's request: {user_request}. 
-    Search the recipe database to find a 3 existing meals 
+    Search the recipe database to find 3 existing meals 
     that align with the user's dietary preferences and time constraints (user profile: {user_profile}). 
   expected_output: >
-    A list of suitable recipes including their titles and full ingredient lists. Exclude the preparation steps.
+    A detailed text summary of 3 suitable recipes, including their titles and full ingredient lists formatted as text. Exclude the preparation steps.
   agent: recipe_researcher
+
+calculate_macros_task:
+  description: >
+    Take the recipes from the 'research_recipes_task'. Use the macronutrient tool fetch_ingredient_macros to 
+    calculate the total calories, protein, carbohydrates, and fats for each meal. If this tool cannot find macronutrients 
+    use the online macro tool.
+  expected_output: >
+    A detailed text-based nutritional breakdown for every recipe provided, formatted clearly 
+    per serving with calories, protein, carbs, and fats.
+  agent: nutritionist
+  context:
+    - research_recipes_task
+
+price_ingredients_task:
+  description: >
+    Identify all unique ingredients required for the selected meals. Search for current market prices in Europe to estimate the 
+    cost of each meal and the total grocery bill for the entire plan.
+  expected_output: >
+    A detailed text-based itemized price list for all ingredients with a total cost estimate 
+    for the proposed meal plan, formatted as readable text.
+  agent: cost_estimator
+  context:
+    - research_recipes_task
+
+summarize_plan_task:
+  description: >
+    Synthesize all information gathered (recipes, nutrition, and costs). 
+    Review this against the user's personal profile: {user_profile} and the user request: {user_request}. 
+    If the user specifies its age, weight and height, calculate the body composition and energy needs 
+    (BMI and maintenance calories as well as calories needed to increase or decrease weight) using the health calculator tool.
+    Create a finalized summary and retrieve the recipe cooking steps using the recipe tool.
+  expected_output: >
+    A comprehensive, professionally formatted meal plan summary as readable text including 
+    a menu, nutritional overview, shopping budget, and health metrics if applicable. Display first the user's body composition information
+    if available, then display the meal menu (overview with brief kcal macros and price), then go into detail for each meal if there are multiple with the price and nutritional information.
+  agent: plan_summarizer
+  context:
+    - research_recipes_task
+    - calculate_macros_task
+    - price_ingredients_task
 
 # invent_meal_task:
 #   description: >
@@ -17,46 +57,3 @@ research_recipes_task:
 #     Two original recipe creations with a title, a brief "chef's note" on the 
 #     flavor profile, and a detailed list of ingredients.
 #   agent: creative_chef
-
-calculate_macros_task:
-  description: >
-    Take the list of recipes from both the 'research_recipes_task'. Use the macronutrient tool fetch_ingredient_macros to 
-    calculate the total calories, protein, carbohydrates, and fats for each meal. If this tool cannot find macronutrients 
-    use the other tool available, the online macro tool
-  expected_output: >
-    A nutritional breakdown for every recipe provided, formatted clearly 
-    per serving.
-  agent: nutritionist
-  context:
-    - research_recipes_task
-    #- invent_meal_task
-
-price_ingredients_task:
-  description: >
-    Identify all unique ingredients required for the selected and invented 
-    meals. Search for current market prices in Europe to estimate the 
-    cost of each meal and the total grocery bill for the entire plan.
-  expected_output: >
-    An itemized price list for all ingredients and a total cost estimate 
-    for the proposed meal plan.
-  agent: cost_estimator
-  context:
-    - research_recipes_task
-    #- invent_meal_task
-
-summarize_plan_task:
-  description: >
-    Synthesize all information gathered (recipes, nutrition, and costs). 
-    Review this against the user's personal profile: {user_profile} and the user request: {user_request}. 
-    If the user specifies its age, weight and height, calculate the body composition and energy needs 
-    (BMI and maintenance calories as well as calories needed to increase or decrease weight) using the personal_health_calculator tool.
-    Create a finalized summary and retrieve the recipe cooking steps using the recipe tool.
-  expected_output: >
-    A comprehensive, professionally formatted meal plan summary including 
-    a menu, nutritional overview, and shopping budget.
-  agent: plan_summarizer
-  context:
-    - research_recipes_task
-    #- invent_meal_task
-    - calculate_macros_task
-    - price_ingredients_task

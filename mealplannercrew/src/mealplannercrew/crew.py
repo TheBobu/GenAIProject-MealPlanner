@@ -16,29 +16,41 @@ class Mealplannercrew:
     """Mealplannercrew crew"""
 
     smart_llm = LLM(
-        model="groq/llama-3.3-70b-versatile",
+        model="groq/llama-3.3-70b-versatile", 
         api_key=settings.groq_api_key,
-        max_tokens=1000
+        max_tokens=2000,
+        temperature=0.7,
     )
 
     fast_llm = LLM(
         model="groq/meta-llama/llama-4-scout-17b-16e-instruct",
         api_key=settings.groq_api_key,
         max_tokens=1000,
+        temperature=0.7,
     )
-
-    backup_llm = LLM(
-        model="gemini/gemma-3-12b-it",
-        api_key=settings.google_api_key,
+    
+    fast_mistral_llm = LLM(
+        model="mistral/mistral-small-latest",
+        api_key=settings.mistral_api_key,
         max_tokens=1000,
+        temperature=0.7,
     )
 
-    mistral_llm = LLM(
+    balanced_mistral_llm = LLM(
         model="mistral/mistral-medium-latest",
         api_key=settings.mistral_api_key,
         max_tokens=1000,
+        temperature=0.7,
+        extra_headers={"include_thinking": "false"},
     )
-
+    
+    large_mistral_llm = LLM(
+        model="mistral/mistral-large-latest",
+        api_key=settings.mistral_api_key,
+        max_tokens=1000,
+        temperature=0.7,
+        extra_headers={"include_thinking": "false"},
+    )
 
     agents: List[BaseAgent]
     tasks: List[Task]
@@ -55,7 +67,7 @@ class Mealplannercrew:
             config=self.agents_config["recipe_researcher"],
             tools=[search_recipes],
             verbose=True,
-            llm=self.mistral_llm,
+            llm=self.fast_llm,
         )
 
     @agent
@@ -64,7 +76,7 @@ class Mealplannercrew:
             config=self.agents_config["nutritionist"],
             tools=[fetch_ingredient_macros, nutrition_tool],
             verbose=True,
-            llm=self.mistral_llm,
+            llm=self.balanced_mistral_llm,
         )
 
     @agent
@@ -73,7 +85,7 @@ class Mealplannercrew:
             config=self.agents_config["cost_estimator"],
             tools=[price_tool],
             verbose=True,
-            llm = self.mistral_llm
+            llm=self.fast_mistral_llm,
         )
 
     # @agent
@@ -90,8 +102,8 @@ class Mealplannercrew:
         return Agent(
             config=self.agents_config["plan_summarizer"],
             verbose=True,
-            llm=self.mistral_llm,
-            tools=[search_recipes, health_calculator]
+            llm=self.smart_llm,
+            tools=[search_recipes, health_calculator],
         )
 
     @task
@@ -128,7 +140,7 @@ class Mealplannercrew:
             tasks=self.tasks,  # Automatically created by the @task decorator
             process=Process.sequential,
             verbose=True,
-            max_rpm=15,
-            planning_llm=self.smart_llm
+            max_rpm=10,
+            planning_llm=self.large_mistral_llm,
             # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
         )

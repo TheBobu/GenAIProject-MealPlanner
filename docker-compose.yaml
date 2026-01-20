@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  backend:
+    build:
+      context: ./mealplannercrew
+      dockerfile: Dockerfile
+    container_name: meal-planner-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    volumes:
+      - ./mealplannercrew:/app
+      - meal_planner_db:/app/knowledge
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - meal-planner-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./meal-planner-frontend
+      dockerfile: Dockerfile
+    container_name: meal-planner-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - meal-planner-network
+    stdin_open: true
+    tty: true
+
+volumes:
+  meal_planner_db:
+
+networks:
+  meal-planner-network:
+    driver: bridge

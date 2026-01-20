@@ -1,0 +1,11 @@
+{
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "testdb",
+            "database": "${workspaceFolder:GenAIProject-MealPlanner}/mealplannercrew/src/database_service/database/meal_planner.db"
+        }
+    ]
+}
