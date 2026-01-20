@@ -13,10 +13,36 @@ class MealService:
         cleaned = re.sub(r'\(.*?\)', '', cleaned) # Remove anything in parentheses
         return cleaned.strip().split(',')[-1].strip() # Take the core noun
 
-    def get_random_meal(self, max_kcals: float):
-        # Since your CSV lacks a 'Calories' column, we will pick random 
-        # or you can add a placeholder logic here.
-        meal_row = self.df.sample(n=1).iloc[0]
+    def get_random_meal(self, max_kcals: int, allergies: str = None, preference: str = None):
+        temp_df = self.df.copy()
+
+        # 1. Filter by Calories (if column exists)
+        if 'Calories' in temp_df.columns:
+            temp_df = temp_df[temp_df['Calories'] <= max_kcals]
+
+        # 2. Filter out Allergies
+        if allergies:
+            allergy_list = [a.strip().lower() for a in allergies.split(',')]
+            for allergy in allergy_list:
+                # Keep rows where the allergy word is NOT in the ingredients string
+                temp_df = temp_df[~temp_df['Cleaned_Ingredients'].str.lower().str.contains(allergy)]
+
+        # 3. Filter by Preferences (Vegetarian logic)
+        if preference:
+            pref = preference.lower()
+            if pref == 'vegetarian':
+                non_veg_items = ['chicken', 'beef', 'pork', 'fish', 'shrimp', 'turkey', 'bacon', 'meat']
+                for item in non_veg_items:
+                    temp_df = temp_df[~temp_df['Cleaned_Ingredients'].str.lower().str.contains(item)]
+            elif pref == 'vegan':
+                animal_prods = ['chicken', 'beef', 'pork', 'fish', 'egg', 'milk', 'cheese', 'butter', 'honey']
+                for item in animal_prods:
+                    temp_df = temp_df[~temp_df['Cleaned_Ingredients'].str.lower().str.contains(item)]
+
+        if temp_df.empty:
+            return None
+
+        meal_row = temp_df.sample(n=1).iloc[0]
         
         # Parse the string "['item1', 'item2']" into a real list
         raw_list = ast.literal_eval(meal_row['Cleaned_Ingredients'])

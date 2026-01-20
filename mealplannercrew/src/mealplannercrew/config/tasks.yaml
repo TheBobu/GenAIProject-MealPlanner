@@ -37,10 +37,19 @@ summarize_plan_task:
     If the user specifies its age, weight and height, calculate the body composition and energy needs 
     (BMI and maintenance calories as well as calories needed to increase or decrease weight) using the health calculator tool.
     Create a finalized summary and retrieve the recipe cooking steps using the recipe tool.
+    Format your response EXACTLY as follows:
+      1. Start with body composition (if available): BMI, maintenance calories, weight loss/gain targets
+      2. Then list the meal menu with brief overview
+      3. For each meal, provide: name, ingredients, calories, macros, and price
+      4. End with total shopping cost and summary
+    IMPORTANT: Return ONLY the final meal plan as readable text. Do not include your reasoning or thought process.
   expected_output: >
-    A comprehensive, professionally formatted meal plan summary as readable text including 
-    a menu, nutritional overview, shopping budget, and health metrics if applicable. Display first the user's body composition information
-    if available, then display the meal menu (overview with brief kcal macros and price), then go into detail for each meal if there are multiple with the price and nutritional information.
+    A comprehensive, well-formatted meal plan summary including:
+    - User's body composition data (if available)
+    - Complete meal menu overview
+    - Detailed breakdown per meal with nutritional info and pricing
+    - Total budget and shopping list
+    Return only the final formatted output, no internal reasoning.
   agent: plan_summarizer
   context:
     - research_recipes_task

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Send, Loader, CheckCircle, AlertCircle, User, Plus } from 'lucide-react';
+import { Send, Loader, CheckCircle, AlertCircle, User, Plus, History, ArrowLeft } from 'lucide-react';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
-
+const API_BASE_URL = import.meta.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 export default function MealPlannerApp() {
   const [activeTab, setActiveTab] = useState('profile');
   const [userPrompt, setUserPrompt] = useState('');
@@ -10,6 +9,8 @@ export default function MealPlannerApp() {
   const [taskResults, setTaskResults] = useState({});
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
+  const [selectedUserHistory, setSelectedUserHistory] = useState(null);
+  const [userTasks, setUserTasks] = useState([]);
 
   const [profileForm, setProfileForm] = useState({
     username: '',
@@ -30,6 +31,23 @@ export default function MealPlannerApp() {
     fetchUsers();
   }, []);
 
+  const renderMarkdown = (markdown) => {
+    if (!markdown) return null;
+    
+    let html = markdown
+      .replace(/^### (.*?)$/gm, '<h3 style="font-size: 1.125rem; font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem;">$1</h3>')
+      .replace(/^## (.*?)$/gm, '<h2 style="font-size: 1.25rem; font-weight: bold; margin-top: 1.5rem; margin-bottom: 0.75rem;">$1</h2>')
+      .replace(/^# (.*?)$/gm, '<h1 style="font-size: 1.875rem; font-weight: bold; margin-top: 2rem; margin-bottom: 1rem;">$1</h1>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: bold;">$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em style="font-style: italic;">$1</em>')
+      .replace(/^- (.*?)$/gm, '<li style="margin-left: 1.5rem; margin-bottom: 0.25rem;">$1</li>')
+      .replace(/(<li[^>]*>.*?<\/li>)/s, '<ul style="list-style: disc;">$1</ul>')
+      .replace(/\n\n/g, '</p><p style="margin-bottom: 1rem;">')
+      .replace(/\n/g, '<br/>');
+
+    return <div dangerouslySetInnerHTML={{ __html: html }} />;
+  };
+
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/users`);
@@ -37,6 +55,18 @@ export default function MealPlannerApp() {
       setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch users:', err);
+    }
+  };
+
+  const fetchUserTasks = async (username) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/status/${username}`);
+      const data = await res.json();
+      setUserTasks(data.tasks ? data.tasks.filter(t => t.status === 'completed') : []);
+      setSelectedUserHistory(username);
+    } catch (err) {
+      console.error('Failed to fetch user tasks:', err);
+      setUserTasks([]);
     }
   };
 
@@ -110,7 +140,6 @@ export default function MealPlannerApp() {
         setLoadingTaskId(taskId);
         setUserPrompt('');
 
-        // Poll for results
         const pollInterval = setInterval(async () => {
           try {
             const statusRes = await fetch(`${API_BASE_URL}/status/${selectedUser}`);
@@ -132,7 +161,6 @@ export default function MealPlannerApp() {
           }
         }, 2000);
 
-        // Stop polling after 5 minutes
         setTimeout(() => clearInterval(pollInterval), 300000);
       } else {
         setError('Failed to generate meal plan');
@@ -142,35 +170,15 @@ export default function MealPlannerApp() {
     }
   };
 
-  const renderMarkdown = (markdown) => {
-    if (!markdown) return null;
-    
-    // Simple markdown to HTML converter
-    let html = markdown
-      .replace(/^### (.*?)$/gm, '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*?)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
-      .replace(/^# (.*?)$/gm, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
-      .replace(/^- (.*?)$/gm, '<li class="ml-6 mb-1">$1</li>')
-      .replace(/(<li.*?<\/li>)/s, '<ul class="list-disc">$1</ul>')
-      .replace(/\n\n/g, '</p><p class="mb-4">')
-      .replace(/\n/g, '<br/>');
-
-    return html;
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">🍽️ Meal Planner AI</h1>
           <p className="text-gray-600">Generate personalized meal plans with nutritional analysis</p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-6">
+        <div className="flex gap-4 mb-6 flex-wrap">
           <button
             onClick={() => setActiveTab('profile')}
             className={`px-6 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
@@ -191,9 +199,18 @@ export default function MealPlannerApp() {
           >
             <Plus size={20} /> Generate Plan
           </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-6 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
+              activeTab === 'history'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <History size={20} /> User History
+          </button>
         </div>
 
-        {/* Alerts */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
             <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
@@ -207,7 +224,6 @@ export default function MealPlannerApp() {
           </div>
         )}
 
-        {/* Profile Tab */}
         {activeTab === 'profile' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-lg shadow-lg p-6">
@@ -294,7 +310,6 @@ export default function MealPlannerApp() {
               </div>
             </div>
 
-            {/* Saved Users */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-2xl font-bold mb-6">Saved Users</h2>
               {users.length > 0 ? (
@@ -314,10 +329,8 @@ export default function MealPlannerApp() {
           </div>
         )}
 
-        {/* Generate Plan Tab */}
         {activeTab === 'generate' && (
           <div className="space-y-6">
-            {/* Generate Form */}
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-2xl font-bold mb-6">Generate Meal Plan</h2>
               <div className="space-y-4">
@@ -358,7 +371,6 @@ export default function MealPlannerApp() {
               </div>
             </div>
 
-            {/* Results */}
             {Object.entries(taskResults).map(([taskId, task]) => (
               <div key={taskId} className="bg-white rounded-lg shadow-lg p-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -384,6 +396,83 @@ export default function MealPlannerApp() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div className="space-y-6">
+            {!selectedUserHistory ? (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold mb-6">Select User to View History</h2>
+                {users.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {users.map(user => (
+                      <button
+                        key={user.username}
+                        onClick={() => fetchUserTasks(user.username)}
+                        className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg border border-indigo-200 hover:border-indigo-500 hover:shadow-md transition text-left"
+                      >
+                        <p className="font-bold text-gray-900 mb-2">{user.username}</p>
+                        <p className="text-sm text-gray-600">Age: {user.age || 'N/A'}</p>
+                        <p className="text-sm text-gray-600">Height: {user.height || 'N/A'} cm</p>
+                        <p className="text-sm text-gray-600">Weight: {user.weight || 'N/A'} kg</p>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-600">No users found</p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <button
+                  onClick={() => {
+                    setSelectedUserHistory(null);
+                    setUserTasks([]);
+                  }}
+                  className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium mb-4"
+                >
+                  <ArrowLeft size={20} /> Back to Users
+                </button>
+
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h2 className="text-2xl font-bold mb-6">
+                    Completed Tasks for <span className="text-indigo-600">{selectedUserHistory}</span>
+                  </h2>
+
+                  {userTasks.length > 0 ? (
+                    <div className="space-y-4">
+                      {userTasks.map(task => (
+                        <div key={task.task_id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="text-green-600" size={24} />
+                              <div>
+                                <p className="font-bold text-gray-900">Meal Plan Generated</p>
+                                <p className="text-sm text-gray-600">
+                                  {task.created_at ? new Date(task.created_at).toString() : 'N/A'}
+                                </p>
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                              {task.task_id}...
+                            </p>
+                          </div>
+
+                          {task.result && (
+                            <div className="bg-gray-50 p-4 rounded-lg text-gray-800 text-sm leading-relaxed max-h-64 overflow-y-auto">
+                              {renderMarkdown(task.result)}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-600 text-center py-8">No completed tasks for this user</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

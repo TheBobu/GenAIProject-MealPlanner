@@ -13,10 +13,7 @@ sentence-transformers>=5.2.0
 tokenizers~=0.20.3
 mcp~=1.16.0
 langchain_huggingface
-torch>=2.0.0
-torchvision>=0.15.0
-torchaudio>=2.0.0
---extra-index-url https://download.pytorch.org/whl/cu118
+portalocker>=2.7.0
 groq
 fastapi
 apscheduler>=3.11.2

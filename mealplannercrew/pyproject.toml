@@ -16,9 +16,6 @@ dependencies = [
     "tokenizers~=0.20.3",
     "mcp~=1.16.0",
     "langchain-huggingface>=1.2.0",
-    "torch>=2.0.0",
-    "torchvision>=0.15.0",
-    "torchaudio>=2.0.0",
     "portalocker>=2.7.0",
     "crewai[google-genai,tools]>=1.8.1",
     "groq>=1.0.0",
@@ -44,5 +41,8 @@ type = "crew"
 
 [tool.uv]
 index-url = "https://pypi.org/simple"
-extra-index-url = ["https://download.pytorch.org/whl/cu118"]
 index-strategy = "unsafe-best-match"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mealplannercrew"]
+

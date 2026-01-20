@@ -34,6 +34,7 @@ class Mealplannercrew:
         api_key=settings.mistral_api_key,
         max_tokens=1000,
         temperature=0.7,
+        extra_headers={"include_thinking": "false"},
     )
 
     balanced_mistral_llm = LLM(
@@ -102,7 +103,7 @@ class Mealplannercrew:
         return Agent(
             config=self.agents_config["plan_summarizer"],
             verbose=True,
-            llm=self.smart_llm,
+            llm=self.large_mistral_llm,
             tools=[search_recipes, health_calculator],
         )
 

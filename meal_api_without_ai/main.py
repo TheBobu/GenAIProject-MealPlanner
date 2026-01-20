@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 from meal_service import MealService
 from nutrition_service import NutritionService
 from price_service import PriceService
+from typing import Optional, List
+from fastapi import Query
 import os
 
 app = FastAPI()
@@ -28,6 +30,9 @@ def save_to_markdown(data: dict):
     # This assumes nutrition_snapshot has the 'meal_totals' key from the previous step
     totals = data['nutrition_snapshot'].get('meal_totals', {"kcal": 0, "protein": 0})
     
+    filters = data.get('user_filters', {})
+    filter_section = f"- **Excluding Allergies:** {filters.get('allergies')}\n- **Dietary Preference:** {filters.get('preference')}"
+    
     content = f"""# {data['title']}
 
 ## 📝 Instructions
@@ -43,7 +48,7 @@ def save_to_markdown(data: dict):
 - **Estimated Total Cost:** ${data['pricing'].get('total_estimated_cost', 0)} {data['pricing'].get('currency', 'USD')}
 - **Total Calculated Energy:** {totals.get('kcal')} kcal
 - **Total Calculated Protein:** {totals.get('protein')} g
-
+${filter_section}
 > *Note: Pricing and nutrition are estimates based on the top ingredients.*
 """
     with open(filename, "w", encoding="utf-8") as f:
@@ -52,11 +57,18 @@ def save_to_markdown(data: dict):
 
 
 @app.get("/generate-meal")
-async def generate_meal(max_calories: int = 800):
-    print("Step 1/3: Get meal from dataset.")
-    meal = meal_svc.get_random_meal(max_calories)
+async def generate_meal(
+    max_calories: int = 800,
+    allergies: Optional[str] = Query(None, description="Comma-separated list (e.g., 'nuts,dairy')"),
+    dietary_pref: Optional[str] = Query(None, description="e.g., 'vegetarian', 'vegan'")
+):
+    print(f"Step 1/3: Get meal from dataset with preferences: {dietary_pref}, allergies: {allergies}")
+    
+    # Pass preferences to the service
+    meal = meal_svc.get_random_meal(max_kcals=max_calories, allergies=allergies, preference=dietary_pref)
+    
     if not meal:
-        raise HTTPException(status_code=404, detail="No meals found")
+        raise HTTPException(status_code=404, detail="No meals found matching your criteria")
 
     print("Step 2/3: Estimate meal cost.")
     price_info = price_svc.estimate_cost(meal["search_ingredients"])
@@ -67,13 +79,14 @@ async def generate_meal(max_calories: int = 800):
     result = {
         "title": meal["title"],
         "calories_limit": max_calories,
-        "ingredients_list": meal["display_ingredients"],  # What the user sees
+        "user_filters": {"allergies": allergies, "preference": dietary_pref},
+        "ingredients_list": meal["display_ingredients"],
         "instructions": meal["instructions"],
         "pricing": price_info,
         "nutrition_snapshot": main_ingredient_macros,
     }
-    save_to_markdown(result)
 
+    save_to_markdown(result)
     return result
 
 
