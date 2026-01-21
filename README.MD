@@ -176,6 +176,28 @@ To run the project locally a conda environment is needed. The definition of the 
 conda env create -f environment.yml
 ```
 
+To run the backend locally you need to `cd` into the directory and run 
+
+```sh
+uv sync
+crewai run # run without API
+uv run uvicorn app:app --env-file .env # run with API
+``` 
+
+To run the frontend locally you need to `cd` into the directory and run
+
+```sh
+npm install
+npm run dev
+```
+
+To run the backend without generative AI you need to `cd` into the directory and run 
+
+```sh
+pip install -r requirements.txt
+pyhton -m main
+```
+
 ---
 
 # Example runs
