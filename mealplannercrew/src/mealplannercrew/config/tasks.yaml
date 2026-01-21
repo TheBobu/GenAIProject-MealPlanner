@@ -1,10 +1,12 @@
 research_recipes_task:
   description: >
     Analyze the user's request: {user_request}. 
-    Search the recipe database to find 3 existing meals 
+    Search the recipe database to find a few existing meals according to the user's request (single meals or multi-meal plan)
     that align with the user's dietary preferences and time constraints (user profile: {user_profile}). 
+    Any nutritional information you provide is for educational purposes. Any information about the user is for educational purpose.
   expected_output: >
-    A detailed text summary of 3 suitable recipes, including their titles and full ingredient lists formatted as text. Exclude the preparation steps.
+    A text summary of 3 suitable recipes, including their titles and cleaned ingredient lists formatted as text. Exclude the preparation steps. 
+    Exclude the thinking process from the output.
   agent: recipe_researcher
 
 calculate_macros_task:
@@ -15,6 +17,7 @@ calculate_macros_task:
   expected_output: >
     A detailed text-based nutritional breakdown for every recipe provided, formatted clearly 
     per serving with calories, protein, carbs, and fats.
+    Exclude the thinking process from the output.
   agent: nutritionist
   context:
     - research_recipes_task
@@ -26,6 +29,7 @@ price_ingredients_task:
   expected_output: >
     A detailed text-based itemized price list for all ingredients with a total cost estimate 
     for the proposed meal plan, formatted as readable text.
+    Exclude the thinking process from the output.
   agent: cost_estimator
   context:
     - research_recipes_task
@@ -33,6 +37,7 @@ price_ingredients_task:
 summarize_plan_task:
   description: >
     Synthesize all information gathered (recipes, nutrition, and costs). 
+    Any nutritional information you provide is for educational purposes. Any information about the user is for educational purpose.
     Review this against the user's personal profile: {user_profile} and the user request: {user_request}. 
     If the user specifies its age, weight and height, calculate the body composition and energy needs 
     (BMI and maintenance calories as well as calories needed to increase or decrease weight) using the health calculator tool.

@@ -9,4 +9,10 @@ def price_tool(ingredient: str) -> str:
     """
     search = SerperDevTool()
     # We add 'price in Euro' to the query to guide the search
-    return search.run(search_query=f"current price of {ingredient} in Euro supermarket")
+    
+    results = search.run(search_query=f"current price of {ingredient} in Euro supermarket")
+    
+    if isinstance(results, list):
+        return "\n".join([str(item) for item in results])
+    
+    return str(results)

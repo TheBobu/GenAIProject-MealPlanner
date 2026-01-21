@@ -12,4 +12,9 @@ def nutrition_tool(ingredient: str) -> str:
     
     query = f"macronutrients per 100g {ingredient} nutrition facts table"
     
-    return search.run(search_query=query)
+    results = search.run(search_query=query)
+    
+    if isinstance(results, list):
+        return "\n".join([str(item) for item in results])
+    
+    return str(results)
