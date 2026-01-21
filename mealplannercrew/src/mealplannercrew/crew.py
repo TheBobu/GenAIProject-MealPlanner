@@ -141,7 +141,7 @@ class Mealplannercrew:
             tasks=self.tasks,  # Automatically created by the @task decorator
             process=Process.sequential,
             verbose=True,
-            max_rpm=10,
+            max_rpm=settings.requests_per_minute,
             planning_llm=self.large_mistral_llm,
             # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
         )

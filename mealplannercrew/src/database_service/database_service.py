@@ -22,10 +22,9 @@ class DatabaseService:
     
     def init_db(self):
         """Initialize database tables."""
-        if not self.db_path.exists():
-            self.connect()
-        else:
-            self.connect()
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+            
+        self.connect()
         
         cursor = self.conn.cursor()
         

@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     mistral_api_key: str
     uv_link_mode:str
     serper_api_key:str
+    requests_per_minute:int
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 

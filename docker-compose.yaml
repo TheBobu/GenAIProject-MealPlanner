@@ -13,6 +13,7 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - MISTRAL_API_KEY=${MISTRAL_API_KEY}
       - SERPER_API_KEY=${SERPER_API_KEY}
+      - REQUESTS_PER_MINUTE=${REQUESTS_PER_MINUTE}
     volumes:
       - ./mealplannercrew:/app
       - meal_planner_db:/app/knowledge
